@@ -4,6 +4,7 @@ import json
 from .models import User, ClassInfo
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth import logout
 
 @csrf_exempt
 def signup(request):
@@ -85,4 +86,48 @@ def get_classes(request):
         )
         return JsonResponse(list(classes), safe=False)
     return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def edit_class(request, class_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            class_obj = ClassInfo.objects.get(ClassID=class_id)
+
+            # Update fields
+            class_obj.ClassName = data.get("ClassName", class_obj.ClassName)
+            class_obj.ClassCode = data.get("ClassCode", class_obj.ClassCode)
+            class_obj.Description = data.get("Description", class_obj.Description)
+            class_obj.YearLevel = data.get("YearLevel", class_obj.YearLevel)
+            class_obj.ScheduleDays = data.get("ScheduleDays", class_obj.ScheduleDays)
+            class_obj.ScheduleTime = data.get("ScheduleTime", class_obj.ScheduleTime)
+
+            class_obj.save()
+            return JsonResponse({"success": True, "message": "Class updated successfully"})
+        except ClassInfo.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Class not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def delete_class(request, class_id):
+    if request.method == "DELETE":
+        try:
+            class_to_delete = ClassInfo.objects.get(ClassID=class_id)
+            class_to_delete.delete()
+            return JsonResponse({"success": True, "message": "Class deleted successfully"})
+        except ClassInfo.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Class not found"}, status=404)
+    return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def api_logout(request):
+    if request.method == "POST":
+        logout(request)
+        return JsonResponse({"success": True, "message": "Successfully logged out"})
+    return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+
 
