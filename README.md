@@ -19,7 +19,7 @@ A Django RESTful API for managing students, instructors, and classes. This proje
   - Delete classes
   - All CRUD operations are available via RESTful endpoints
 
-     ![App Screenshot](images/img3(2).png)
+     ![App Screenshot](images/imgClss.png)
 
 - **Role Support**
   - Supports `Student` and `Instructor` roles
