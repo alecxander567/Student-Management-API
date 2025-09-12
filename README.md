@@ -50,5 +50,5 @@ A Django RESTful API for managing students, instructors, and classes. This proje
 | POST   | `/api/logout/`                 | Logout user                    |
 
 
- **UI technologies:** [![My Skills](https://skillicons.dev/icons?i=dotnet,csharp)](https://skillicons.dev)
+ **UI technologies:** [![My Skills](https://skillicons.dev/icons?i=cs,dotnet)](https://skillicons.dev)
  **Backend server:** [![My Skills](https://skillicons.dev/icons?i=python,django,mysql)](https://skillicons.dev)
