@@ -10,7 +10,7 @@ A Django RESTful API for managing students, instructors, and classes. This proje
   - Login endpoint with role-based information in the response
   - Logout endpoint for session management
 
-    ![App Screenshot](images/example-screenshot.png)
+    ![App Screenshot](images/img1.png)  ![App Screenshot](images/img2.png)
 
 - **Class Management**
   - Add new classes with details (name, code, description, instructor, year level, schedule)
@@ -18,6 +18,8 @@ A Django RESTful API for managing students, instructors, and classes. This proje
   - Edit/update class information
   - Delete classes
   - All CRUD operations are available via RESTful endpoints
+
+     ![App Screenshot](images/img3.png)
 
 - **Role Support**
   - Supports `Student` and `Instructor` roles
