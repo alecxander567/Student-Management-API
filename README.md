@@ -10,6 +10,8 @@ A Django RESTful API for managing students, instructors, and classes. This proje
   - Login endpoint with role-based information in the response
   - Logout endpoint for session management
 
+    ![App Screenshot](images/example-screenshot.png)
+
 - **Class Management**
   - Add new classes with details (name, code, description, instructor, year level, schedule)
   - Retrieve a list of all classes (GET)
@@ -46,8 +48,5 @@ A Django RESTful API for managing students, instructors, and classes. This proje
 | POST   | `/api/logout/`                 | Logout user                    |
 
 
-
-
----
-
-**Author:** [alecxander567](https://github.com/alecxander567)
+ **UI technologies:** [![My Skills](https://skillicons.dev/icons?i=dotnet,csharp)](https://skillicons.dev)
+ **Backend server:** [![My Skills](https://skillicons.dev/icons?i=python,django,mysql)](https://skillicons.dev)
