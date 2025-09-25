@@ -1,10 +1,13 @@
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
-from .models import User, ClassInfo
+from .models import User, ClassInfo, Assignment, Activity
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout
+
 
 @csrf_exempt
 def signup(request):
@@ -28,6 +31,7 @@ def signup(request):
         return JsonResponse({"success": True, "message": "User created successfully"})
     return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
+
 @csrf_exempt
 def login(request):
     if request.method == "POST":
@@ -42,9 +46,9 @@ def login(request):
                     "success": True,
                     "message": "Login successful",
                     "user": {
+                        "user_id": user.user_id,
                         "full_name": user.full_name,
-                        "email": user.email,
-                        "role": user.role
+                        "email": user.email
                     }
                 })
             else:
@@ -53,6 +57,7 @@ def login(request):
             return JsonResponse({"success": False, "message": "User not found"}, status=404)
 
     return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
+
 
 @csrf_exempt
 def add_class(request):
@@ -77,6 +82,7 @@ def add_class(request):
 
     return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
+
 @csrf_exempt
 def get_classes(request):
     if request.method == "GET":
@@ -87,6 +93,7 @@ def get_classes(request):
         return JsonResponse(list(classes), safe=False)
     return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
+
 @csrf_exempt
 def edit_class(request, class_id):
     if request.method == "POST":
@@ -94,7 +101,6 @@ def edit_class(request, class_id):
             data = json.loads(request.body)
             class_obj = ClassInfo.objects.get(ClassID=class_id)
 
-            # Update fields
             class_obj.ClassName = data.get("ClassName", class_obj.ClassName)
             class_obj.ClassCode = data.get("ClassCode", class_obj.ClassCode)
             class_obj.Description = data.get("Description", class_obj.Description)
@@ -111,6 +117,7 @@ def edit_class(request, class_id):
 
     return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
 
+
 @csrf_exempt
 def delete_class(request, class_id):
     if request.method == "DELETE":
@@ -122,12 +129,128 @@ def delete_class(request, class_id):
             return JsonResponse({"success": False, "message": "Class not found"}, status=404)
     return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
+
+@csrf_exempt
+def add_assignment(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            class_id = data.get('ClassID')
+            title = data.get('Title')
+            instructions = data.get('Instructions')
+            date_posted_str = data.get('DatePosted')
+            date_of_submission_str = data.get('DateOfSubmission')
+
+            if not all([class_id, title, instructions, date_of_submission_str]):
+                return JsonResponse({'error': 'Missing required fields.'}, status=400)
+
+            if date_posted_str:
+                date_posted = parse_datetime(date_posted_str)
+                if date_posted is None:
+                    return JsonResponse({'error': 'Invalid DatePosted format.'}, status=400)
+            else:
+                date_posted = timezone.now()
+
+            date_of_submission = parse_datetime(date_of_submission_str)
+            if date_of_submission is None:
+                return JsonResponse({'error': 'Invalid DateOfSubmission format.'}, status=400)
+
+            try:
+                cls = ClassInfo.objects.get(pk=class_id)
+            except ClassInfo.DoesNotExist:
+                return JsonResponse({'error': 'Class not found.'}, status=404)
+
+            assignment = Assignment.objects.create(
+                ClassID=cls,
+                Title=title,
+                Instructions=instructions,
+                DatePosted=date_posted,
+                DateOfSubmission=date_of_submission
+            )
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Assignment added successfully!',
+                'assignment': {
+                    'AssignmentID': assignment.AssignmentID,
+                    'ClassID': assignment.ClassID.ClassID,
+                    'Title': assignment.Title,
+                    'Instructions': assignment.Instructions,
+                    'DatePosted': assignment.DatePosted.isoformat(),
+                    'DateOfSubmission': assignment.DateOfSubmission.isoformat()
+                }
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@csrf_exempt
+def add_activity(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            class_id = data.get('ClassID')
+            title = data.get('Title')
+            instructions = data.get('Instructions')
+            date_posted_str = data.get('DatePosted')
+            date_of_submission_str = data.get('DateOfSubmission')
+
+            if not all([class_id, title, instructions, date_of_submission_str]):
+                return JsonResponse({'error': 'Missing required fields.'}, status=400)
+
+            if date_posted_str:
+                date_posted = parse_datetime(date_posted_str)
+                if date_posted is None:
+                    return JsonResponse({'error': 'Invalid DatePosted format.'}, status=400)
+            else:
+                date_posted = timezone.now()
+
+            date_of_submission = parse_datetime(date_of_submission_str)
+            if date_of_submission is None:
+                return JsonResponse({'error': 'Invalid DateOfSubmission format.'}, status=400)
+
+            try:
+                cls = ClassInfo.objects.get(pk=class_id)
+            except ClassInfo.DoesNotExist:
+                return JsonResponse({'error': 'Class not found.'}, status=404)
+
+            activity = Activity.objects.create(
+                ClassID=cls,
+                Title=title,
+                Instructions=instructions,
+                DatePosted=date_posted,
+                DateOfSubmission=date_of_submission
+            )
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Activity added successfully!',
+                'activity': {
+                    'ActivityID': activity.ActivityID,
+                    'ClassID': activity.ClassID.ClassID,
+                    'Title': activity.Title,
+                    'Instructions': activity.Instructions,
+                    'DatePosted': activity.DatePosted.isoformat(),
+                    'DateOfSubmission': activity.DateOfSubmission.isoformat()
+                }
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
 @csrf_exempt
 def api_logout(request):
     if request.method == "POST":
         logout(request)
         return JsonResponse({"success": True, "message": "Successfully logged out"})
     return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
-
-
-
