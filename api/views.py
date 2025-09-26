@@ -202,7 +202,6 @@ def get_assignments(request):
         except ClassInfo.DoesNotExist:
             return JsonResponse({"error": "Class not found"}, status=404)
 
-        # Get all assignments for the class
         assignments = Assignment.objects.filter(ClassID=cls).values(
             "AssignmentID",
             "Title",
@@ -216,7 +215,7 @@ def get_assignments(request):
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
-@csrf_exempt  # only if you’re testing without CSRF token
+@csrf_exempt
 def update_assignment(request, pk):
     if request.method == "PUT":
         try:
@@ -229,7 +228,6 @@ def update_assignment(request, pk):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON."}, status=400)
 
-        # Update fields
         assignment.Title = data.get("Title", assignment.Title)
         assignment.Instructions = data.get("Instructions", assignment.Instructions)
         assignment.DateOfSubmission = data.get("DateOfSubmission", assignment.DateOfSubmission)
