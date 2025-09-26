@@ -3,7 +3,7 @@ from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
-from .models import User, ClassInfo, Assignment, Activity
+from .models import User, ClassInfo, Assignment
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout
@@ -190,62 +190,59 @@ def add_assignment(request):
 
 
 @csrf_exempt
-def add_activity(request):
-    if request.method == "POST":
+def get_assignments(request):
+    if request.method == "GET":
+        class_id = request.GET.get("class_id")
+
+        if not class_id:
+            return JsonResponse({"error": "Missing class_id"}, status=400)
+
+        try:
+            cls = ClassInfo.objects.get(pk=class_id)
+        except ClassInfo.DoesNotExist:
+            return JsonResponse({"error": "Class not found"}, status=404)
+
+        # Get all assignments for the class
+        assignments = Assignment.objects.filter(ClassID=cls).values(
+            "AssignmentID",
+            "Title",
+            "Instructions",
+            "DatePosted",
+            "DateOfSubmission"
+        )
+
+        return JsonResponse(list(assignments), safe=False)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt  # only if you’re testing without CSRF token
+def update_assignment(request, pk):
+    if request.method == "PUT":
+        try:
+            assignment = Assignment.objects.get(pk=pk)
+        except Assignment.DoesNotExist:
+            return JsonResponse({"error": "Assignment not found."}, status=404)
+
         try:
             data = json.loads(request.body)
-            class_id = data.get('ClassID')
-            title = data.get('Title')
-            instructions = data.get('Instructions')
-            date_posted_str = data.get('DatePosted')
-            date_of_submission_str = data.get('DateOfSubmission')
-
-            if not all([class_id, title, instructions, date_of_submission_str]):
-                return JsonResponse({'error': 'Missing required fields.'}, status=400)
-
-            if date_posted_str:
-                date_posted = parse_datetime(date_posted_str)
-                if date_posted is None:
-                    return JsonResponse({'error': 'Invalid DatePosted format.'}, status=400)
-            else:
-                date_posted = timezone.now()
-
-            date_of_submission = parse_datetime(date_of_submission_str)
-            if date_of_submission is None:
-                return JsonResponse({'error': 'Invalid DateOfSubmission format.'}, status=400)
-
-            try:
-                cls = ClassInfo.objects.get(pk=class_id)
-            except ClassInfo.DoesNotExist:
-                return JsonResponse({'error': 'Class not found.'}, status=404)
-
-            activity = Activity.objects.create(
-                ClassID=cls,
-                Title=title,
-                Instructions=instructions,
-                DatePosted=date_posted,
-                DateOfSubmission=date_of_submission
-            )
-
-            return JsonResponse({
-                'success': True,
-                'message': 'Activity added successfully!',
-                'activity': {
-                    'ActivityID': activity.ActivityID,
-                    'ClassID': activity.ClassID.ClassID,
-                    'Title': activity.Title,
-                    'Instructions': activity.Instructions,
-                    'DatePosted': activity.DatePosted.isoformat(),
-                    'DateOfSubmission': activity.DateOfSubmission.isoformat()
-                }
-            })
-
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
 
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+        # Update fields
+        assignment.Title = data.get("Title", assignment.Title)
+        assignment.Instructions = data.get("Instructions", assignment.Instructions)
+        assignment.DateOfSubmission = data.get("DateOfSubmission", assignment.DateOfSubmission)
+        assignment.save()
+
+        return JsonResponse({
+            "id": assignment.id,
+            "Title": assignment.Title,
+            "Instructions": assignment.Instructions,
+            "DateOfSubmission": assignment.DateOfSubmission.strftime("%Y-%m-%d")
+        }, status=200)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @csrf_exempt

@@ -45,17 +45,3 @@ class Assignment(models.Model):
 
     def __str__(self):
         return self.Title
-
-class Activity(models.Model):
-    ActivityID = models.AutoField(primary_key=True)
-    ClassID = models.ForeignKey('ClassInfo', on_delete=models.CASCADE, db_column='ClassID')
-    Title = models.CharField(max_length=255)
-    Instructions = models.TextField()
-    DatePosted = models.DateTimeField(default=timezone.now)
-    DateOfSubmission = models.DateTimeField()
-
-    class Meta:
-        db_table = "activities"
-
-    def __str__(self):
-        return self.Title

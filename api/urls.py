@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/classes/edit/<int:class_id>/', views.edit_class, name='edit_class'),
     path('api/classes/<int:class_id>/delete/', views.delete_class, name='delete_class'),
     path('api/assignments/', views.add_assignment, name='add_assignment'),
-    path('api/activities/', views.add_activity, name='add-activity'),
+    path("api/get_assignments/", views.get_assignments, name="get_assignments"),
+    path('api/update_assignment/<int:pk>/', views.update_assignment, name='update-assignment'),
     path('api/logout/', views.api_logout, name='api_logout'),
 ]
