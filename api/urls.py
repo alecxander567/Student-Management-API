@@ -11,5 +11,6 @@ urlpatterns = [
     path('api/assignments/', views.add_assignment, name='add_assignment'),
     path("api/get_assignments/", views.get_assignments, name="get_assignments"),
     path('api/update_assignment/<int:pk>/', views.update_assignment, name='update-assignment'),
+    path('api/delete_assignment/<int:assignment_id>/', views.delete_assignment, name='delete_assignment'),
     path('api/logout/', views.api_logout, name='api_logout'),
 ]

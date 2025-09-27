@@ -3,6 +3,11 @@ from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
+
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 from .models import User, ClassInfo, Assignment
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
@@ -241,6 +246,17 @@ def update_assignment(request, pk):
         }, status=200)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@api_view(['DELETE'])
+def delete_assignment(request, assignment_id):
+    try:
+        assignment = Assignment.objects.get(AssignmentID=assignment_id)
+        assignment.delete()
+        return Response({"message": "Assignment deleted successfully"}, status=status.HTTP_200_OK)
+    except Assignment.DoesNotExist:
+        return Response({"message": "Assignment not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @csrf_exempt
