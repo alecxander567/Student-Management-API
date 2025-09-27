@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
@@ -21,7 +22,6 @@ def signup(request):
         full_name = data.get("full_name")
         email = data.get("email")
         password = data.get("password")
-        role = data.get("role")
 
         if User.objects.filter(email=email).exists():
             return JsonResponse({"success": False, "message": "Email already exists"}, status=400)
@@ -30,7 +30,6 @@ def signup(request):
             full_name=full_name,
             email=email,
             password=make_password(password),
-            role=role
         )
 
         return JsonResponse({"success": True, "message": "User created successfully"})
@@ -67,23 +66,33 @@ def login(request):
 @csrf_exempt
 def add_class(request):
     if request.method == "POST":
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
 
-        new_class = ClassInfo.objects.create(
-            ClassName=data.get("ClassName"),
-            ClassCode=data.get("ClassCode"),
-            Description=data.get("Description"),
-            InstructorID=data.get("InstructorID", 0),
-            YearLevel=data.get("YearLevel"),
-            ScheduleDays=data.get("ScheduleDays"),
-            ScheduleTime=data.get("ScheduleTime"),
-        )
+            instructor_id = data.get("InstructorID")
+            instructor = get_object_or_404(User, pk=instructor_id)
 
-        return JsonResponse({
-            "success": True,
-            "message": "Class added successfully",
-            "class_id": new_class.ClassID
-        })
+            new_class = ClassInfo.objects.create(
+                ClassName=data.get("ClassName"),
+                ClassCode=data.get("ClassCode"),
+                Description=data.get("Description"),
+                InstructorID=instructor,
+                YearLevel=data.get("YearLevel"),
+                ScheduleDays=data.get("ScheduleDays"),
+                ScheduleTime=data.get("ScheduleTime"),
+            )
+
+            return JsonResponse({
+                "success": True,
+                "message": "Class added successfully",
+                "class_id": new_class.ClassID
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                "success": False,
+                "message": str(e)
+            }, status=500)
 
     return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
