@@ -80,12 +80,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',   # Use MySQL engine
-        'NAME': 'student_management',           # Name of your database in XAMPP
-        'USER': 'root',                          # XAMPP default user
-        'PASSWORD': '',                          # XAMPP default has empty password
-        'HOST': '127.0.0.1',                     # localhost
-        'PORT': '3306',                          # default MySQL port
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'student_management',
+        'USER': 'root',
+        'PASSWORD': 'mypassWord21',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }

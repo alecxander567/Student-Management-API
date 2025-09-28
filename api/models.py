@@ -2,14 +2,18 @@ from django.db import models
 from django.utils import timezone
 
 class User(models.Model):
-    user_id = models.AutoField(primary_key=True)
+    user_id = models.AutoField(primary_key=True)  # keep as primary key
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
     date_created = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        db_table = "user"
+
     def __str__(self):
         return self.full_name
+
 
 class ClassInfo(models.Model):
     ClassID = models.AutoField(primary_key=True)
@@ -19,7 +23,8 @@ class ClassInfo(models.Model):
     InstructorID = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        db_column='InstructorID'
+        db_column='InstructorID',  # column name stays the same
+        related_name='classes'
     )
     YearLevel = models.CharField(max_length=50)
     ScheduleDays = models.CharField(max_length=50)
@@ -32,9 +37,15 @@ class ClassInfo(models.Model):
     def __str__(self):
         return self.ClassName
 
+
 class Assignment(models.Model):
     AssignmentID = models.AutoField(primary_key=True)
-    ClassID = models.ForeignKey('ClassInfo', on_delete=models.CASCADE, db_column='ClassID')
+    ClassID = models.ForeignKey(
+        ClassInfo,
+        on_delete=models.CASCADE,
+        db_column='ClassID',
+        related_name='assignments'
+    )
     Title = models.CharField(max_length=255)
     Instructions = models.TextField()
     DatePosted = models.DateTimeField(default=timezone.now)
