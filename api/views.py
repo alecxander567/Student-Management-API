@@ -268,6 +268,30 @@ def delete_assignment(request, assignment_id):
         return Response({"message": "Assignment not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
+def dashboard_summary(request):
+    total_classes = ClassInfo.objects.count()
+
+    total_assignments = Assignment.objects.count()
+
+    class_schedules = []
+    classes = ClassInfo.objects.all()
+    for cls in classes:
+        class_schedules.append({
+            "ClassName": cls.ClassName,
+            "ClassCode": cls.ClassCode,
+            "ScheduleDays": cls.ScheduleDays,
+            "ScheduleTime": cls.ScheduleTime.strftime("%H:%M")
+        })
+
+    data = {
+        "total_classes": total_classes,
+        "total_assignments": total_assignments,
+        "class_schedules": class_schedules
+    }
+
+    return JsonResponse(data)
+
+
 @csrf_exempt
 def api_logout(request):
     if request.method == "POST":
