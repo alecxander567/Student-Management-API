@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import User, ClassInfo, Assignment
+from .models import User, ClassInfo, Assignment, Student
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout
@@ -270,17 +270,18 @@ def delete_assignment(request, assignment_id):
 
 def dashboard_summary(request):
     total_classes = ClassInfo.objects.count()
-
     total_assignments = Assignment.objects.count()
 
     class_schedules = []
     classes = ClassInfo.objects.all()
     for cls in classes:
+        assignment_count = Assignment.objects.filter(ClassID=cls).count()
         class_schedules.append({
             "ClassName": cls.ClassName,
             "ClassCode": cls.ClassCode,
             "ScheduleDays": cls.ScheduleDays,
-            "ScheduleTime": cls.ScheduleTime.strftime("%H:%M")
+            "ScheduleTime": cls.ScheduleTime.strftime("%H:%M"),
+            "AssignmentCount": assignment_count   # 👈 add per-class assignments
         })
 
     data = {
@@ -290,6 +291,75 @@ def dashboard_summary(request):
     }
 
     return JsonResponse(data)
+
+
+@csrf_exempt
+def add_student(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required"}, status=400)
+
+    try:
+        data = json.loads(request.body)
+
+        first_name = data.get("FirstName")
+        last_name = data.get("LastName")
+        sex = data.get("Sex")
+        department = data.get("Department")
+        year_level = data.get("YearLevel")
+        class_id = data.get("ClassID")
+
+        if not all([first_name, last_name, sex, department, year_level, class_id]):
+            return JsonResponse({"error": "Missing required fields"}, status=400)
+
+        try:
+            class_instance = ClassInfo.objects.get(pk=class_id)
+        except ClassInfo.DoesNotExist:
+            return JsonResponse({"error": "Class not found"}, status=404)
+
+        student = Student.objects.create(
+            FirstName=first_name,
+            LastName=last_name,
+            Sex=sex,
+            Department=department,
+            YearLevel=year_level,
+            ClassID=class_instance
+        )
+
+        return JsonResponse({
+            "message": "Student added successfully",
+            "StudentID": student.StudentID
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+def get_students(request):
+    class_id = request.GET.get("class_id")
+    if not class_id:
+        return JsonResponse({"error": "class_id is required"}, status=400)
+
+    try:
+        class_instance = ClassInfo.objects.get(pk=class_id)
+    except ClassInfo.DoesNotExist:
+        return JsonResponse({"error": "Class not found"}, status=404)
+
+    students = Student.objects.filter(ClassID=class_instance)
+    student_list = []
+    for s in students:
+        student_list.append({
+            "StudentID": s.StudentID,
+            "FirstName": s.FirstName,
+            "LastName": s.LastName,
+            "Sex": s.Sex,
+            "Department": s.Department,
+            "YearLevel": s.YearLevel,
+        })
+
+    return JsonResponse(student_list, safe=False)
 
 
 @csrf_exempt

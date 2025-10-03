@@ -56,3 +56,31 @@ class Assignment(models.Model):
 
     def __str__(self):
         return self.Title
+
+
+class Student(models.Model):
+    SEX_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other'),
+    )
+
+    StudentID = models.AutoField(primary_key=True)
+    FirstName = models.CharField(max_length=100)
+    LastName = models.CharField(max_length=100)
+    Sex = models.CharField(max_length=1, choices=SEX_CHOICES)
+    Department = models.CharField(max_length=100)
+    YearLevel = models.PositiveIntegerField()
+
+    ClassID = models.ForeignKey(
+        'ClassInfo',
+        on_delete=models.CASCADE,
+        db_column='ClassID',
+        related_name='students'
+    )
+
+    class Meta:
+        db_table = 'students'
+
+    def __str__(self):
+        return f"{self.FirstName} {self.LastName}"
