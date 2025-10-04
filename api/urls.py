@@ -15,5 +15,6 @@ urlpatterns = [
     path('api/dashboard/', views.dashboard_summary, name='dashboard-summary'),
     path('api/add_student/', views.add_student, name='add_student'),
     path('api/students/', views.get_students, name='get_students'),
+    path('api/edit_student/<int:student_id>/', views.edit_student, name='edit_student'),
     path('api/logout/', views.api_logout, name='api_logout'),
 ]

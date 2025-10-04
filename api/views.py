@@ -363,6 +363,51 @@ def get_students(request):
 
 
 @csrf_exempt
+def edit_student(request, student_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            student = Student.objects.get(StudentID=student_id)
+
+            student.FirstName = data.get('FirstName', student.FirstName)
+            student.LastName = data.get('LastName', student.LastName)
+            student.Sex = data.get('Sex', student.Sex)
+            student.Department = data.get('Department', student.Department)
+            student.YearLevel = data.get('YearLevel', student.YearLevel)
+
+            if 'ClassID' in data:
+                student.ClassID_id = data['ClassID']
+
+            student.save()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Student updated successfully',
+                'student': {
+                    'StudentID': student.StudentID,
+                    'FirstName': student.FirstName,
+                    'LastName': student.LastName,
+                    'Sex': student.Sex,
+                    'Department': student.Department,
+                    'YearLevel': student.YearLevel,
+                    'ClassID': student.ClassID_id
+                }
+            }, status=200)
+
+        except Student.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Student not found'}, status=404)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
 def api_logout(request):
     if request.method == "POST":
         logout(request)
