@@ -408,6 +408,19 @@ def edit_student(request, student_id):
 
 
 @csrf_exempt
+def delete_student(request, student_id):
+    if request.method == 'POST':
+        try:
+            student = Student.objects.get(StudentID=student_id)
+            student.delete()
+            return JsonResponse({'message': 'Student deleted successfully!'})
+        except Student.DoesNotExist:
+            return JsonResponse({'error': 'Student not found.'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+@csrf_exempt
 def api_logout(request):
     if request.method == "POST":
         logout(request)
