@@ -197,8 +197,3 @@ curl -X POST http://localhost:8000/api/assignments/ \
   }'
 ```
 
-
-
-**Status**: Active Development
-
-For questions or support, please open an issue on GitHub.
