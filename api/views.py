@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
 
+from django.views.decorators.http import require_GET
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -281,7 +282,7 @@ def dashboard_summary(request):
             "ClassCode": cls.ClassCode,
             "ScheduleDays": cls.ScheduleDays,
             "ScheduleTime": cls.ScheduleTime.strftime("%H:%M"),
-            "AssignmentCount": assignment_count   # 👈 add per-class assignments
+            "AssignmentCount": assignment_count
         })
 
     data = {
@@ -418,6 +419,33 @@ def delete_student(request, student_id):
             return JsonResponse({'error': 'Student not found.'}, status=404)
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+@require_GET
+def overdue_assignments(request):
+    class_id = request.GET.get('class_id')
+    if not class_id:
+        return JsonResponse({"error": "class_id parameter is required"}, status=400)
+
+    try:
+        class_obj = ClassInfo.objects.get(ClassID=class_id)
+        overdue = Assignment.objects.filter(ClassID=class_obj, DateOfSubmission__lt=timezone.now())
+
+        data = [
+            {
+                "AssignmentID": a.AssignmentID,
+                "ClassID": a.ClassID.ClassID,
+                "Title": a.Title,
+                "Instructions": a.Instructions,
+                "DatePosted": a.DatePosted.strftime("%Y-%m-%dT%H:%M:%S"),
+                "DateOfSubmission": a.DateOfSubmission.strftime("%Y-%m-%dT%H:%M:%S"),
+            }
+            for a in overdue
+        ]
+        return JsonResponse(data, safe=False)
+
+    except ClassInfo.DoesNotExist:
+        return JsonResponse({"error": "Class not found"}, status=404)
 
 
 @csrf_exempt

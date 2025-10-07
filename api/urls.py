@@ -17,5 +17,6 @@ urlpatterns = [
     path('api/students/', views.get_students, name='get_students'),
     path('api/edit_student/<int:student_id>/', views.edit_student, name='edit_student'),
     path('api/delete_student/<int:student_id>/', views.delete_student, name='delete_student'),
+    path('api/overdue_assignments/', views.overdue_assignments, name='overdue_assignments'),
     path('api/logout/', views.api_logout, name='api_logout'),
 ]

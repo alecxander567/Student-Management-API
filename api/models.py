@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 class User(models.Model):
-    user_id = models.AutoField(primary_key=True)  # keep as primary key
+    user_id = models.AutoField(primary_key=True)
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
@@ -23,7 +23,7 @@ class ClassInfo(models.Model):
     InstructorID = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        db_column='InstructorID',  # column name stays the same
+        db_column='InstructorID',
         related_name='classes'
     )
     YearLevel = models.CharField(max_length=50)
